@@ -1,7 +1,7 @@
 {
-	"name": "partywire",
+	"name": "shaders.site",
 	"version": "0.0.1",
-	"description": "realtime party relay",
+	"description": "A website for sharing shaders and models",
 	"main": "src/index.ts",
 	"author": "Dom Mandy",
 	"displayName": "partywire",
@@ -17,7 +17,7 @@
 		"prerestart": "npm stop",
 		"restart": "npx pm2 restart 'npm start src' --watch",
 		"postrestart": "npx pm2 monit",
-		"start": "node --no-warnings --experimental-modules --loader ts-node/esm --inspect --experimental-specifier-resolution=node",
+		"start": "node --no-warnings --experimental-modules --loader ts-node/esm --inspect --experimental-specifier-resolution=node src",
 		"test": "npx ts-node src/tests && npx eslint && npx prettier --check .",
 		"fix": "npm update && npx eslint --fix && npx prettier --write ."
 	},
