@@ -15,21 +15,28 @@ log('Server is initializing')
 const { env } = process
 log('initialized variables')
 
-// this is the format for the content you can add on to the base url
-Fastify.get('/:user/:repo/:file', async (request, reply) => {
-	// shaders.site/domrally/pbr/rough
-	const { user, repo, file } = request.params as any,
-		//
-		url = `https://cdn.jsdelivr.net/gh/${user}/${repo}@latest/${file}.`,
-		// { data: feature } = await axios.get(
-		// 	`https://cdn.jsdelivr.net/gh/${u}/${r}/${f}`
-		// ),
-		//  { data: model } = await axios.get(`${url}obj`),
-		//  { data: pixel } = await axios.get(`${url}glsl`),
-		{ data: vertex } = await axios.get(`${url}vert`),
-		{ data: fragment } = await axios.get(`${url}frag`)
-
-	reply.type('text/html').send(`
+function get404() {
+	return `
+	<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>shaders·site</title>
+		<style>
+			body {
+				margin: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>404</h1>
+		<p>Not Found</p>
+	</body>
+</html>
+	`
+}
+function getHtml(vertex: string, fragment: string) {
+	return `
 	<!DOCTYPE html>
 <html>
 	<head>
@@ -118,7 +125,58 @@ Fastify.get('/:user/:repo/:file', async (request, reply) => {
 		</script>
 	</body>
 </html>
-  `)
+  `
+}
+
+Fastify.get('//:user/:repo/:file//:u/:r/:f', async (request, reply) => {
+	try {
+		const { user, repo, file, u, r, f } = request.params as any,
+			// this is the format for the content you can add on to the base url
+			// https://shaders.site/domrally/pbr/smooth//mrdoob/three.js/suzanne.vert
+			url = `https://cdn.jsdelivr.net/gh/${user}/${repo}@latest/${file}.`,
+			{ data: feature } = await axios.get(
+				`https://cdn.jsdelivr.net/gh/${u}/${r}/${f}`
+			),
+			// { data: model } = await axios.get(`${url}obj`),
+			// { data: pixel } = await axios.get(`${url}glsl`),
+			{ data: vertex } = await axios.get(`${url}vert`),
+			{ data: fragment } = await axios.get(`${url}frag`)
+
+		let vertexShader = vertex,
+			fragmentShader = fragment
+
+		if (f.includes('.vert')) {
+			vertexShader = feature
+		} else if (f.includes('.frag')) {
+			fragmentShader = feature
+		}
+
+		reply.type('text/html').send(getHtml(vertexShader, fragmentShader))
+	} catch (error) {
+		reply.type('text/html').send(get404())
+	}
+})
+
+// this is the format for the content you can add on to the base url
+Fastify.get('//:user/:repo/:file', async (request, reply) => {
+	// shaders.site/domrally/pbr/rough
+
+	try {
+		const { user, repo, file } = request.params as any,
+			//
+			url = `https://cdn.jsdelivr.net/gh/${user}/${repo}@latest/${file}.`,
+			// { data: feature } = await axios.get(
+			// 	`https://cdn.jsdelivr.net/gh/${u}/${r}/${f}`
+			// ),
+			//  { data: model } = await axios.get(`${url}obj`),
+			//  { data: pixel } = await axios.get(`${url}glsl`),
+			{ data: vertex } = await axios.get(`${url}vert`),
+			{ data: fragment } = await axios.get(`${url}frag`)
+
+		reply.type('text/html').send(getHtml(vertex, fragment))
+	} catch (error) {
+		reply.type('text/html').send(get404)
+	}
 })
 
 //
@@ -126,6 +184,8 @@ await Fastify.ready()
 log('Server is ready')
 
 //
-const port = parseInt(env['PORT'] || '3000')
-await Fastify.listen({ host: '0.0.0.0', port })
+const port = parseInt(env['PORT'] || '3000'),
+	host = env['HOST'] || '0.0.0.0'
+
+await Fastify.listen({ host, port })
 log(`Server is listening on port: ${port}`)
