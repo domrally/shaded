@@ -128,6 +128,35 @@ function getHtml(vertex: string, fragment: string) {
   `
 }
 
+// perfect
+Fastify.get('/*', async (_, reply) => {
+	reply.type('text/html').send(get404())
+})
+
+// homepage
+Fastify.get('/', async (_, reply) => {
+	reply.type('text/html').send(`
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<meta charset="utf-8" />
+			<title>shaders·site</title>
+			<style>
+				body {
+					margin: 0;
+					}
+					</style>
+					</head>
+					<body>
+					<h1>shaders·site</h1>
+					<p>shaders·site is a collection of shaders that are hosted on github and served by jsdelivr</p>
+					<p>the url format is https://shaders.site//:user/:repo/:file</p>
+					<p>the remix format is https://shaders.site//:user/:repo/:file//:u/:r/:f</p>
+					</body>
+					</html>
+`)
+})
+
 Fastify.get('//:user/:repo/:file//:u/:r/:f', async (request, reply) => {
 	try {
 		const { user, repo, file, u, r, f } = request.params as any,
