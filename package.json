@@ -1,6 +1,6 @@
 {
 	"name": "shaders.site",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "A website for sharing shaders and models",
 	"main": "src/index.ts",
 	"author": "Dom Mandy",
