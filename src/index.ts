@@ -127,5 +127,5 @@ log('Server is ready')
 
 //
 const port = parseInt(env['PORT'] || '3000')
-await Fastify.listen({ port })
+await Fastify.listen({ host: '0.0.0.0', port })
 log(`Server is listening on port: ${port}`)
