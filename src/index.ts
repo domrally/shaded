@@ -88,7 +88,7 @@ function getHtml(vertex: string, fragment: string) {
 				// onLoad callback
 				geometry => {
 					geometry.computeVertexNormals()
-					const object = new Mesh((new TorusKnotGeometry())computeVertexNormals(), material)
+					const object = new Mesh(new TorusKnotGeometry(), material)
 
 					scene.add(object)
 
