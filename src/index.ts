@@ -77,7 +77,8 @@ function getHtml(vertex: string, fragment: string) {
 
 			renderer.setSize(window.innerWidth, window.innerHeight)
 			document.body.appendChild(renderer.domElement)
-			camera.position.z = 2
+			camera.position.z = 5
+			camera.fov = 30
 			scene.background = new Color(0x00ff00)
 
 			//
