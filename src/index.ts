@@ -55,6 +55,7 @@ function getHtml(vertex: string, fragment: string) {
 
 			const {
 					BufferGeometryLoader,
+					TorusKnotGeometry,
 					Color,
 					Mesh,
 					PerspectiveCamera,
@@ -87,7 +88,7 @@ function getHtml(vertex: string, fragment: string) {
 				// onLoad callback
 				geometry => {
 					geometry.computeVertexNormals()
-					const object = new Mesh(geometry, material)
+					const object = new Mesh(new TorusKnotGeometry(), material)
 
 					scene.add(object)
 
