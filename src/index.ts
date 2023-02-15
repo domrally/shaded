@@ -54,19 +54,12 @@ function getHtml(vertex: string, fragment: string) {
 		// import axios from https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js
 
 			const {
-					AmbientLight,
 					BufferGeometryLoader,
 					Color,
-					DirectionalLight,
-					HemisphereLight,
 					Mesh,
-					MeshLambertMaterial,
-					MeshToonMaterial,
 					PerspectiveCamera,
-					PointLight,
 					Scene,
 					ShaderMaterial,
-					TorusKnotGeometry,
 					Vector2,
 					Vector3,
 					Vector4,
@@ -76,24 +69,16 @@ function getHtml(vertex: string, fragment: string) {
 				scene = new Scene(),
 				{ innerWidth: width, innerHeight: height } = window,
 				camera = new PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000),
-				hemisphereLight = new HemisphereLight(0xffffbb, 0x080820, 0.5),
-				directionalLight = new DirectionalLight(),
-				ambientLight = new AmbientLight(0x004040),
-				pointLight = new PointLight(0xff0000, 0.5, 100),
 				material = new ShaderMaterial({
 					vertexShader: \`${vertex}\`,
 					fragmentShader: \`${fragment}\`,
 				}),
 				renderer = new WebGLRenderer()
 
-			pointLight.position.set(-5, 5, 5)
 			renderer.setSize(window.innerWidth, window.innerHeight)
 			document.body.appendChild(renderer.domElement)
-			camera.position.z = 5
+			camera.position.z = 2
 			scene.background = new Color(0x00ff00)
-			scene.add(pointLight)
-			scene.add(directionalLight)
-			scene.add(ambientLight)
 
 			//
 			loader.load(
@@ -102,9 +87,6 @@ function getHtml(vertex: string, fragment: string) {
 				geometry => {
 					geometry.computeVertexNormals()
 					const object = new Mesh(geometry, material)
-
-					directionalLight.position.set(50, 50, 50)
-					directionalLight.target = object
 
 					scene.add(object)
 
