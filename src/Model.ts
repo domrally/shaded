@@ -14,22 +14,20 @@ import '@babylonjs/loaders/glTF'
  * fetches the mesh data from the github repo
  */
 export class Model {
-	static async Load(user: string, repo: string, file: string) {
-		// create a new headless scene data structure
-		const url = `https://cdn.jsdelivr.net/gh/${user}/${repo}@latest/${file}`,
-			// { data } = await axios.get(`${url}`),
-			// // Instantiate a loader
-			// loader = new GLTFLoader(),
-			// assetArrayBuffer: any = await Tools.LoadFileAsync(url, true),
-			// assetBlob = new Blob([assetArrayBuffer]),
-			// assetUrl = URL.createObjectURL(assetBlob),
-			// // Load a glTF resource
-			// gltf: any = await loader.parseAsync(
-			// 	data,
-			// 	`https://cdn.jsdelivr.net/gh/${user}/${repo}@latest/`
-			// ),
-			// position = gltf.scene.children[0].geometry.attributes.position,
-			scene = new Scene(new NullEngine()),
+	static async Load(url: string) {
+		// { data } = await axios.get(`${url}`),
+		// // Instantiate a loader
+		// loader = new GLTFLoader(),
+		// assetArrayBuffer: any = await Tools.LoadFileAsync(url, true),
+		// assetBlob = new Blob([assetArrayBuffer]),
+		// assetUrl = URL.createObjectURL(assetBlob),
+		// // Load a glTF resource
+		// gltf: any = await loader.parseAsync(
+		// 	data,
+		// 	`https://cdn.jsdelivr.net/gh/${user}/${repo}@latest/`
+		// ),
+		// position = gltf.scene.children[0].geometry.attributes.position,
+		const scene = new Scene(new NullEngine()),
 			gltf = await SceneLoader.ImportMeshAsync(
 				'',
 				url,
@@ -45,12 +43,11 @@ export class Model {
 			// 	undefined,
 			// 	'.glb'
 			// ),
-			position = gltf.meshes[1]!.getVerticesData(VertexBuffer.PositionKind),
-			normal = gltf.meshes[1]!.getVerticesData(VertexBuffer.NormalKind)
-				// ?.map(n => -n)
-				?.toString(),
-			uv = gltf.meshes[1]!.getVerticesData(VertexBuffer.UVKind)?.toString(),
-			index = gltf.meshes[1]!.getIndices()!.toString()
+			mesh = gltf.meshes[1]! as Mesh,
+			position = mesh.getVerticesData(VertexBuffer.PositionKind),
+			normal = mesh.getVerticesData(VertexBuffer.NormalKind)?.toString(),
+			uv = mesh.getVerticesData(VertexBuffer.UVKind)?.toString(),
+			index = mesh.getIndices()!.toString()
 
 		// // flip all the triangles
 		// for (let i = 0; i < position!.values.length; i += 3) {

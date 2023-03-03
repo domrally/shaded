@@ -1,7 +1,10 @@
+import fastifyStatic from '@fastify/static'
 import axios from 'axios'
 import { log } from 'console'
 import { config } from 'dotenv'
 import fastify from 'fastify'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 import { Model } from './Model'
 // @ts-ignore
 import xhr2 from 'xhr2'
@@ -16,8 +19,19 @@ config()
 export const Fastify = fastify()
 log('Server is initializing')
 
-const { env } = process
+const { env } = process,
+	__filename = fileURLToPath(import.meta.url),
+	__dirname = dirname(__filename),
+	folder = env['PUBLIC'] || null
 log('initialized variables')
+
+if (folder) {
+	const root = join(__dirname, '..', folder)
+
+	//
+	await Fastify.register(fastifyStatic, { root, prefix: `/${folder}/` })
+	log(`Serving static files from: ${folder}`)
+}
 
 function get404() {
 	return `
@@ -40,8 +54,6 @@ function get404() {
 	`
 }
 function getHtml(
-	vertex: string,
-	fragment: string,
 	{
 		position,
 		normal,
@@ -52,7 +64,10 @@ function getHtml(
 		normal: string
 		uv: string
 		index: string
-	}
+	},
+	vertex: string,
+	fragment: string,
+	_screen: string
 ) {
 	return `<!DOCTYPE html>
 <html>
@@ -68,6 +83,10 @@ function getHtml(
 	<body>
 		<script type="module"> 
 			import * as THREE from 'https://cdn.jsdelivr.net/npm/three/+esm'
+			// import { ShaderPass } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/postprocessing/ShaderPass.js/+esm'
+			// import { SSAOShader } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/shaders/SSAOShader.js/+esm'
+			// import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/postprocessing/RenderPass.js/+esm'
+			// import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/postprocessing/EffectComposer.js/+esm'
 
 			const {
 					Float32BufferAttribute,
@@ -104,13 +123,20 @@ function getHtml(
 			geometry.setAttribute('normal', new Float32BufferAttribute([${normal}], 3))
 			geometry.setAttribute('uv', new Float32BufferAttribute([${uv}], 2))
 			geometry.setIndex([${index}])
+			geometry.normalizeNormals()
+			geometry.computeVertexNormals()
 
 			const object = new Mesh(geometry, material)
 
 			scene.add(object)
 
+			// const composer = new EffectComposer(renderer)
+			// composer.addPass(new RenderPass(scene, camera))
+			// const SSAOPass = new ShaderPass(SSAOShader)
+			// composer.addPass(SSAOPass)
+
 			function animate() {
-				object.rotation.y += 0.01
+				object.rotation.y += 0.002
 
 				renderer.render(scene, camera)
 
@@ -160,9 +186,12 @@ Fastify.get('//:user/:repo/:file//:u/:r/:f', async (request, reply) => {
 			url = `https://cdn.jsdelivr.net/gh/${user}/${repo}@latest/${file}.`,
 			{ data: vertex } = await axios.get(`${url}vert`),
 			{ data: fragment } = await axios.get(`${url}frag`),
-			model = await Model.Load(u, r, f)
+			{ data: screen } = await axios.get(`${url}glsl`),
+			model = await Model.Load(
+				`https://cdn.jsdelivr.net/gh/${u}/${r}@latest/${f}`
+			)
 
-		reply.type('text/html').send(getHtml(vertex, fragment, model))
+		reply.type('text/html').send(getHtml(model, vertex, fragment, screen))
 	} catch (error) {
 		console.log(error)
 		reply.type('text/html').send(get404())
@@ -176,14 +205,15 @@ Fastify.get('//:user/:repo/:file', async (request, reply) => {
 	try {
 		const { user, repo, file } = request.params as any,
 			//
-			url = `https://cdn.jsdelivr.net/gh/${user}/${repo}@latest/${file}.`,
+			url = folder
+				? `http://localhost:3000/${folder}/${file}.`
+				: `https://cdn.jsdelivr.net/gh/${user}/${repo}@latest/${file}.`,
 			{ data: vertex } = await axios.get(`${url}vert`),
 			{ data: fragment } = await axios.get(`${url}frag`),
-			{ position } = await Model.Load(user, repo, `${file}.glb`)
+			{ data: screen } = await axios.get(`${url}glsl`),
+			model = await Model.Load(`${url}glb`)
 
-		reply
-			.type('text/html')
-			.send(getHtml(vertex, fragment, position!.toString()))
+		reply.type('text/html').send(getHtml(model, vertex, fragment, screen))
 	} catch (error) {
 		reply.type('text/html').send(get404)
 	}
